@@ -1,220 +1,249 @@
-# 📊 Marketing Campaign & GA4 Funnel Analysis
+📊 Marketing Campaign & GA4 Funnel Analysis
 
-This project presents an end-to-end marketing analytics case study combining:
+An end-to-end marketing analytics case study combining:
 
-- SQL-based campaign performance analysis (PostgreSQL)
-- GA4 funnel modeling and behavioral analytics (BigQuery)
+PostgreSQL campaign performance analysis
 
-The objective is to analyze advertising performance, construct session-level conversion funnels, evaluate landing page effectiveness, and measure the relationship between user engagement and purchase behavior.
+GA4 session-level funnel modeling (BigQuery)
 
----
+Landing page attribution
 
-# Part 1 — Marketing Campaign Performance (SQL / PostgreSQL)
+Behavioral correlation analysis
 
-## Tech Stack
-- SQL (PostgreSQL)
-- DBeaver
-- Window Functions (LAG, ROW_NUMBER)
-- Time-Series Aggregation
-- Cross-Platform Data Merging (UNION ALL)
+The project demonstrates cross-platform data integration, KPI computation, session modeling, and behavioral analytics using production-style SQL.
 
-## Data Source
-Database: `ads_analysis_goit_course`  
-Schema: `public`
+🧩 Part 1 — Marketing Campaign Performance (PostgreSQL)
+Tech Stack
+
+PostgreSQL
+
+DBeaver
+
+Window Functions (LAG, ROW_NUMBER)
+
+Time-series aggregation
+
+Cross-platform data merging (UNION ALL)
+
+Data Source
+
+Database: ads_analysis_goit_course
+Schema: public
 
 Tables:
-- facebook_ads_basic_daily
-- google_ads_basic_daily
-- facebook_campaign
-- facebook_adset
 
----
+facebook_ads_basic_daily
 
-## Task 1 — Daily Spend Metrics
+google_ads_basic_daily
 
-Calculated daily average, maximum, and minimum spend values.
+facebook_campaign
 
-### Sample Output
+facebook_adset
 
-| ad_date   | avg_spend | max_spend | min_spend |
-|------------|-----------|-----------|-----------|
-| 2020-11-16 | 2,760     | 2,760     | 2,760     |
-| 2020-12-03 | 3,214     | 3,214     | 3,214     |
+✅ Task 1 — Daily Spend Metrics
 
-### Insight
-Daily spend volatility reveals pacing and budget allocation differences across campaigns.
+Calculated daily:
 
----
+Average spend
 
-## Task 2 — Top 5 Days by ROMI
+Maximum spend
+
+Minimum spend
+
+Sample Output
+ad_date	avg_spend	max_spend	min_spend
+2020-11-16	2,760	2,760	2,760
+2020-12-03	3,214	3,214	3,214
+
+Insight:
+Daily volatility highlights budget pacing differences across advertising channels.
+
+✅ Task 2 — Top 5 Days by ROMI
 
 ROMI Formula:
+
 ROMI = 100 × (Total Value − Total Spend) / Total Spend
 
-### Sample Output
+Sample Output
+ad_date	romi
+2022-01-11	148.69
+2022-01-07	145.66
 
-| ad_date   | romi   |
-|------------|--------|
-| 2022-01-11 | 148.69 |
-| 2022-01-07 | 145.66 |
+Insight:
+Top-performing days exceeded 145% return, indicating highly efficient budget allocation.
 
-### Insight
-Top-performing days exceeded 145% return, indicating highly efficient budget utilization.
+✅ Task 3 — Weekly Highest Total Value Campaign
 
----
+Aggregated by ISO week using EXTRACT(YEAR) and EXTRACT(WEEK).
 
-## Task 3 — Weekly Highest Total Value Campaign
+Sample Output
+campaign_name	year	iso_week	total_value
+Expansion	2022	15	2,294,120
 
-### Sample Output
+Insight:
+Weekly grouping identifies performance peaks at campaign level.
 
-| campaign_name | year | iso_week | total_value |
-|---------------|------|----------|-------------|
-| Expansion     | 2022 | 15       | 2,294,120   |
+✅ Task 4 — Largest Month-over-Month Reach Increase
 
-### Insight
-Weekly aggregation identified peak campaign performance using ISO week grouping.
+Used DATE_TRUNC() and LAG() for MoM growth analysis.
 
----
+Sample Output
+campaign_name	month	monthly_reach	previous_monthly_reach	monthly_reach_diff
+Hobbies	2022-04-01	5,011,659	745,084	4,266,575
 
-## Task 4 — Largest Monthly Reach Increase
+Insight:
+MoM delta analysis isolates campaigns with significant audience expansion.
 
-### Sample Output
+✅ Task 5 — Longest Continuous Adset Exposure
 
-| campaign_name | month       | monthly_reach | previous_monthly_reach | monthly_reach_diff |
-|---------------|------------|---------------|-------------------------|--------------------|
-| Hobbies       | 2022-04-01 | 5,011,659     | 745,084                 | 4,266,575          |
+Applied a gaps-and-islands pattern using ROW_NUMBER().
 
-### Insight
-Month-over-month growth analysis via LAG() identified campaigns with significant audience expansion.
+Sample Output
+adset_name	streak_length	start_date	end_date
+Narrow	108	2021-05-17	2021-09-01
 
----
+Insight:
+Identified uninterrupted exposure streak of 108 days.
 
-## Task 5 — Longest Continuous Adset Exposure
+📈 Part 2 — GA4 Funnel & Behavioral Analytics (BigQuery)
+Tech Stack
 
-### Sample Output
+Google BigQuery
 
-| adset_name | streak_length | start_date  | end_date    |
-|------------|--------------|------------|------------|
-| Narrow     | 108          | 2021-05-17 | 2021-09-01 |
+GA4 Public Dataset
 
-### Insight
-Using a gaps-and-islands pattern, the longest uninterrupted exposure period was calculated at 108 days.
+Nested parameter extraction (UNNEST)
 
----
+Session-level modeling
 
-# Part 2 — GA4 Funnel & Behavioral Analysis (BigQuery)
-
-## Tech Stack
-- Google BigQuery
-- GA4 Public Dataset
-- Nested Parameter Extraction (UNNEST)
-- Session-Level Modeling
-- Correlation Analysis (CORR)
+Correlation analysis (CORR)
 
 Dataset:
-`bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*
 
----
-
-## Task 2 — Event-Level Data Preparation (2021)
+✅ Task 2 — Event-Level Data Preparation (2021)
 
 Prepared a BI-ready dataset including:
 
-- event_date
-- user_pseudo_id
-- session_id
-- event_name
-- country
-- device_category
-- source
-- medium
-- campaign_name
+event_date
 
-Key Techniques:
-- Converted microsecond timestamps
-- Extracted ga_session_id via UNNEST
-- Filtered funnel events
-- Used partition filtering via _TABLE_SUFFIX
+user_pseudo_id
 
----
+session_id
 
-## Task 3 — Session-Level Funnel Conversion
+event_name
 
-Constructed a session-level funnel grouped by:
+country
 
-- event_date
-- source
-- medium
-- campaign
+device_category
 
-Conversion Metrics:
-- visit_to_cart (%)
-- visit_to_checkout (%)
-- visit_to_purchase (%)
+source
 
-### Sample Output
+medium
 
-| event_date | source  | sessions | cart % | checkout % | purchase % |
-|------------|----------|----------|--------|------------|------------|
-| 2021-01-01 | google   | 849      | 2.59   | 1.06       | 0.47       |
-| 2021-01-01 | direct   | 564      | 4.26   | 1.60       | 0.89       |
+campaign_name
 
-### Insight
-Direct traffic demonstrated higher purchase conversion compared to organic search during sampled dates.
+Key techniques:
 
----
+Timestamp conversion (TIMESTAMP_MICROS)
 
-## Task 4 — Landing Page Conversion Comparison (2020)
+Nested field extraction
 
-Compared landing pages based on:
+Partition filtering via _TABLE_SUFFIX
 
-- Total sessions
-- Purchase sessions
-- Purchase conversion rate
+✅ Task 3 — Session-Level Funnel Conversion
 
-### Sample Output
+Built a session-level funnel grouped by:
 
-| landing_page_path | total_sessions | purchase_sessions | purchase_cr (%) |
-|-------------------|---------------|------------------|----------------|
-| Apparel/...       | 2             | 2                | 100.0          |
-| Campus/...        | 2             | 1                | 50.0           |
+event_date
 
-### Insight
-Landing page attribution required matching session_start and purchase events via user + session identifiers. High CR pages must be evaluated with volume context.
+source
 
----
+medium
 
-## Task 5 — Engagement vs Purchase Correlation (2020)
+campaign
 
-Computed session-level correlations:
+Sample Output
+event_date	source	sessions	cart %	checkout %	purchase %
+2021-01-01	google	849	2.59	1.06	0.47
+2021-01-01	direct	564	4.26	1.60	0.89
 
-| corr_engaged_purchase | corr_time_purchase |
-|------------------------|-------------------|
-| 0.112                  | 0.326             |
+Insight:
 
-### Insight
-- Weak positive correlation between engagement presence and purchase (0.11)
-- Moderate positive correlation between engagement duration and purchase (0.33)
-- Engagement time appears to be a stronger indicator of purchase likelihood than binary engagement status
+Direct traffic shows higher purchase conversion compared to organic.
 
----
+Conversion drop-off between cart and purchase is visible.
 
-# Skills Demonstrated
+Accurate session attribution ensured using user + session identifiers.
 
-- Advanced SQL aggregation and window functions
-- Cross-platform marketing data integration
-- GA4 nested schema handling
-- Session-level modeling
-- Funnel conversion analysis
-- Landing page attribution
-- Behavioral feature engineering
-- Correlation analysis in BigQuery
-- Marketing performance KPI tracking
+✅ Task 4 — Landing Page Conversion Comparison (2020)
 
----
+Landing page extracted from session_start and matched with purchase via session ID.
 
-# Project Summary
+Sample Output
+landing_page_path	total_sessions	purchase_sessions	purchase_cr (%)
+Apparel/...	2	2	100.0
+Campus/...	2	1	50.0
 
-This project demonstrates end-to-end marketing analytics capabilities, from campaign performance measurement in PostgreSQL to session-level funnel modeling and behavioral correlation analysis in BigQuery.
+Insight:
 
-It integrates performance reporting, attribution modeling, and behavioral analytics into a unified marketing data workflow.
+High conversion rates require context of session volume.
+
+Session-based attribution prevents misalignment between landing and purchase URLs.
+
+✅ Task 5 — Engagement vs Purchase Correlation (2020)
+Sample Output
+corr_engaged_purchase	corr_time_purchase
+0.112	0.326
+
+Insight:
+
+Weak positive correlation between engagement presence and purchase (0.11)
+
+Moderate positive correlation between engagement time and purchase (0.33)
+
+Engagement duration is a stronger behavioral predictor than binary engagement flag
+
+🧠 Skills Demonstrated
+
+Advanced SQL aggregation
+
+Window functions
+
+Time-series analysis
+
+KPI computation (ROMI, MoM growth)
+
+Cross-platform marketing data integration
+
+GA4 nested schema handling
+
+Session-level feature engineering
+
+Funnel conversion modeling
+
+Landing page attribution
+
+Correlation analysis in BigQuery
+
+Marketing performance diagnostics
+
+📂 Repository Structure
+Marketing-Campaign-GA4-Funnel-Analysis/
+│
+├── sql-campaign-analysis/
+│   └── campaign_analysis.sql
+│
+├── ga4-funnel-analysis/
+│   ├── task2_event_preparation.sql
+│   ├── task3_funnel_conversion.sql
+│   ├── task4_landing_page_comparison.sql
+│   └── task5_engagement_correlation.sql
+│
+└── README.md
+
+📌 Project Summary
+
+This project demonstrates end-to-end marketing analytics capabilities, from campaign KPI evaluation in PostgreSQL to session-level funnel modeling and behavioral analysis in BigQuery.
+
+It integrates performance reporting, attribution logic, and behavioral analytics into a unified data workflow.
